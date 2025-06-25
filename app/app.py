@@ -54,11 +54,10 @@ def build_prompt(user_text, mode, level):
         f"User Input:\n{user_text}"
     )
 
-# ✅ Updated for OpenAI v1.91.0
+# ✅ Corrected OpenAI usage for v1.91.0
 def query_openai(prompt):
     try:
-        client = openai.OpenAI()
-        response = client.chat.completions.create(
+        response = openai.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a helpful, empathetic educational assistant."},
