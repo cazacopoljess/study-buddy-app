@@ -1,7 +1,7 @@
 import streamlit as st
 import openai
 
-# Set your OpenAI API key here or via environment variables
+# Load OpenAI API key securely
 openai.api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else ""
 
 # --- App Title and Description ---
@@ -16,7 +16,6 @@ st.sidebar.header("Accessibility Settings")
 text_size = st.sidebar.selectbox("Select Text Size", options=["Small", "Medium", "Large"], index=1)
 high_contrast = st.sidebar.checkbox("Enable High Contrast Mode")
 
-# Apply accessibility styles
 if text_size == "Small":
     st.markdown("<style>body { font-size:12px; }</style>", unsafe_allow_html=True)
 elif text_size == "Medium":
@@ -30,43 +29,37 @@ if high_contrast:
         body { background-color: black; color: white; }
         .stButton>button { background-color: yellow; color: black; }
         </style>
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# --- User controls for study mode ---
+# --- User controls ---
 st.sidebar.header("Choose Study Mode")
-study_mode = st.sidebar.radio(
-    "Study Mode",
-    options=["Summarize Reading", "Flashcards", "Quiz Questions"],
-    index=0
-)
+study_mode = st.sidebar.radio("Study Mode", ["Summarize Reading", "Flashcards", "Quiz Questions"], index=0)
 
 st.sidebar.header("Select Topic Difficulty")
-difficulty = st.sidebar.selectbox("Difficulty Level", options=["Easy", "Medium", "Hard"], index=1)
+difficulty = st.sidebar.selectbox("Difficulty Level", ["Easy", "Medium", "Hard"], index=1)
 
-# --- Input prompt ---
+# --- Input box ---
 user_input = st.text_area("Enter your study material or question here:", height=150)
 
-# --- Empathetic messages ---
 def empathetic_feedback():
     st.info("Keep up the great work! Remember, mistakes are just opportunities to learn.")
 
-# --- AI Prompt Engineering ---
 def build_prompt(user_text, mode, level):
-    base_prompt = (
+    return (
         "You are Study Buddy, an empathetic and transparent AI study assistant. "
         "You explain concepts clearly, use supportive language, and help students learn effectively.\n"
         f"Study Mode: {mode}\n"
         f"Difficulty: {level}\n"
-        "Instructions: Provide answers, explanations, and highlight key ideas. Use encouraging language."
-        "\n\nUser Input:\n"
+        "Instructions: Provide answers, explanations, and highlight key ideas. Use encouraging language.\n\n"
+        f"User Input:\n{user_text}"
     )
-    return base_prompt + user_text
 
-# --- Call OpenAI API ---
+# ✅ Updated for OpenAI v1.91.0
 def query_openai(prompt):
     try:
-        response = openai.chat.completions.create(
-            model="gpt-4o-mini",
+        client = openai.OpenAI()
+        response = client.chat.completions.create(
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a helpful, empathetic educational assistant."},
                 {"role": "user", "content": prompt}
@@ -78,7 +71,7 @@ def query_openai(prompt):
     except Exception as e:
         return f"Error: {str(e)}"
 
-# --- Main interaction ---
+# --- Main app interaction ---
 if st.button("Get Help"):
     if not user_input.strip():
         st.warning("Please enter some text or a question to get help.")
@@ -87,7 +80,6 @@ if st.button("Get Help"):
         with st.spinner("Study Buddy is thinking..."):
             answer = query_openai(prompt)
 
-        # Display response with transparency
         st.subheader("Study Buddy's Response")
         st.write(answer)
 
@@ -99,10 +91,8 @@ if st.button("Get Help"):
         )
         empathetic_feedback()
 
-# --- Privacy note ---
-st.sidebar.markdown(
-    """
-    ---
-    **Privacy Notice:** Study Buddy does not store or track your inputs. Your privacy and autonomy are respected.
-    """
-)
+# --- Privacy Note ---
+st.sidebar.markdown("""
+---
+**Privacy Notice:** Study Buddy does not store or track your inputs. Your privacy and autonomy are respected.
+""")
