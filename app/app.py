@@ -65,7 +65,7 @@ def build_prompt(user_text, mode, level):
 # --- Call OpenAI API ---
 def query_openai(prompt):
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful, empathetic educational assistant."},
